@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TITIK JENUH COFFEE SHOP — Tempat Singgah Pas Buat Kamu</title>
+<meta name="description" content="TITIK JENUH COFFEE SHOP — kopi nikmat, tempat tenang, colokan melimpah, Wi-Fi kencang. Buka setiap hari 15.00 - 23.00 WIB." />
+<link rel="icon" href="/assets/logo.png" />
+<link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+
+<!-- ============ NAVBAR ============ -->
+<header class="navbar" id="navbar">
+  <div class="container nav-inner">
+    <a href="#beranda" class="brand">
+      <img src="/assets/logo.png" alt="Logo Titik Jenuh" class="brand-logo"
+           onerror="this.style.display='none';document.getElementById('brandFallback').style.display='grid'" />
+      <span class="brand-fallback" id="brandFallback">TJ</span>
+      <span class="brand-text">
+        <strong>TITIK JENUH</strong>
+        <small>COFFEE SHOP</small>
+      </span>
+    </a>
+
+    <nav class="nav-links" id="navLinks">
+      <a href="#beranda">Beranda</a>
+      <a href="#menu">Menu</a>
+      <a href="#vibe">Vibe / Suasana</a>
+      <a href="#lokasi">Lokasi</a>
+      <a href="#kontak">Kontak</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="btn btn-ghost" id="searchToggle" aria-label="Cari">🔍 Cari</button>
+      <a href="#menu" class="btn btn-primary">Reservasi / Pesan Sekarang</a>
+      <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
+    </div>
+  </div>
+
+  <!-- SEARCH BAR (sekali pakai: menu search + gerbang admin) -->
+  <div class="search-panel" id="searchPanel">
+    <div class="container search-inner">
+      <input type="text" id="searchInput" placeholder="Cari menu... (misal: matcha, croissant)" autocomplete="off" />
+      <button class="btn btn-primary" id="searchGo">Cari</button>
+      <button class="btn btn-ghost" id="searchClose">✕</button>
+    </div>
+    <div class="container"><div id="searchResults" class="search-results"></div></div>
+  </div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="beranda">
+  <div class="hero-media">
+    <div class="hero-glow"></div>
+    <div class="hero-video-wrap">
+      <video id="heroVideo" autoplay muted loop playsinline poster="/assets/hero-poster.jpg">
+        <source src="/assets/hero.mp4" type="video/mp4" />
+      </video>
+      <div class="hero-video-fallback">
+        <span class="steam"></span>
+        <span class="steam s2"></span>
+        <span class="cup">☕</span>
+        <p>Taruh <code>assets/hero.mp4</code> untuk video seduh kopi.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container hero-content">
+    <span class="pill">☕ Buka Setiap Hari · 15.00 – 23.00 WIB</span>
+    <h1>Tempat Singgah Pas Buat Kamu yang Lagi Lelah Sama Rutinitas.</h1>
+    <p class="hero-sub">
+      Kopi nikmat, tempat tenang, colokan melimpah, dan Wi-Fi kencang.
+      Titik Jenuh adalah jeda yang kamu cari — buat kerja, ngobrol, atau sekadar diam sebentar.
+    </p>
+    <div class="hero-cta">
+      <a href="#menu" class="btn btn-primary btn-lg">Lihat Menu &amp; Harga</a>
+      <a href="#lokasi" class="btn btn-outline btn-lg">Cek Lokasi &amp; Jam Buka</a>
+    </div>
+    <div class="hero-stats">
+      <div><strong>4.9</strong><span>Rating pengunjung</span></div>
+      <div><strong>50+</strong><span>Kursi &amp; colokan</span></div>
+      <div><strong>1 Gbps</strong><span>Wi-Fi kencang</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MENU ============ -->
+<section class="section" id="menu">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">Menu Unggulan</span>
+      <h2>Digital Menu &amp; Harga Transparan</h2>
+      <p>Pilih kategori favoritmu. Harga jelas, tanpa biaya tersembunyi.</p>
+    </div>
+
+    <div class="tabs" id="menuTabs"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+</section>
+
+<!-- ============ VIBE ============ -->
+<section class="section section-dark" id="vibe">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">The Vibe</span>
+      <h2>Suasana Kafe yang Bikin Betah</h2>
+      <p>Setiap sudut dirancang instagramable — sekaligus nyaman buat kerja lama.</p>
+    </div>
+
+    <div class="gallery">
+      <figure class="g-item g-tall" data-img="/assets/vibe-indoor.jpg">
+        <img src="/assets/vibe-indoor.jpg" alt="Area indoor ber-AC" onerror="this.parentNode.classList.add('no-img')" />
+        <figcaption><strong>Indoor AC</strong><span>Tenang, adem, cocok fokus kerja.</span></figcaption>
+      </figure>
+      <figure class="g-item" data-img="/assets/vibe-outdoor.jpg">
+        <img src="/assets/vibe-outdoor.jpg" alt="Area outdoor" onerror="this.parentNode.classList.add('no-img')" />
+        <figcaption><strong>Outdoor</strong><span>Area merokok &amp; ngobrol santai.</span></figcaption>
+      </figure>
+      <figure class="g-item" data-img="/assets/vibe-workspace.jpg">
+        <img src="/assets/vibe-workspace.jpg" alt="Spot kerja" onerror="this.parentNode.classList.add('no-img')" />
+        <figcaption><strong>Spot Laptopan</strong><span>Meja panjang, lampu hangat, colokan tiap kursi.</span></figcaption>
+      </figure>
+      <figure class="g-item g-wide" data-img="/assets/vibe-bar.jpg">
+        <img src="/assets/vibe-bar.jpg" alt="Coffee bar" onerror="this.parentNode.classList.add('no-img')" />
+        <figcaption><strong>Coffee Bar</strong><span>Lihat barista seduh manual brew langsung.</span></figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FASILITAS ============ -->
+<section class="section" id="fasilitas">
+  <div class="container">
+    <div class="section-head">
+      <span class="kicker">Why Titik Jenuh?</span>
+      <h2>Fasilitas &amp; Keunggulan</h2>
+      <p>Semua yang kamu butuh buat kerja nyaman atau nongkrong lama.</p>
+    </div>
+    <div class="features">
+      <div class="feature"><span class="f-icon">🛜</span><h3>Free Wi-Fi Super Kencang</h3><p>Internet 1 Gbps, stabil buat meeting online &amp; upload.</p></div>
+      <div class="feature"><span class="f-icon">🔌</span><h3>Banyak Colokan</h3><p>Stop kontak di hampir setiap kursi. Laptop aman seharian.</p></div>
+      <div class="feature"><span class="f-icon">🎸</span><h3>Live Music (Weekend)</h3><p>Akustik santai setiap Jumat &amp; Sabtu malam.</p></div>
+      <div class="feature"><span class="f-icon">🅿️</span><h3>Parkiran Aman</h3><p>Area parkir luas dengan penjagaan.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LOKASI ============ -->
+<section class="section section-dark" id="lokasi">
+  <div class="container lokasi-grid">
+    <div>
+      <div class="section-head left">
+        <span class="kicker">Local Info</span>
+        <h2>Lokasi &amp; Jam Operasional</h2>
+      </div>
+      <ul class="info-list">
+        <li><span class="i-icon">🕒</span><div><strong>Jam Buka</strong><p id="infoHours">Senin - Minggu | 15.00 - 23.00 WIB</p></div></li>
+        <li><span class="i-icon">📍</span><div><strong>Alamat</strong><p id="infoAddress">Jl. Kopi Kenangan No. 44, Kota Bandung</p></div></li>
+        <li><span class="i-icon">📞</span><div><strong>Telepon / WhatsApp</strong><p id="infoPhone">+62 812-0000-4400</p></div></li>
+        <li><span class="i-icon">📷</span><div><strong>Instagram</strong><p><a id="infoIg" href="https://instagram.com/titikjenuh.coffee" target="_blank" rel="noopener">@titikjenuh.coffee</a></p></div></li>
+      </ul>
+      <a class="btn btn-primary btn-lg" id="mapsBtn" href="#" target="_blank" rel="noopener">Buka di Google Maps</a>
+    </div>
+
+    <form class="card order-card" id="orderForm">
+      <h3>Pesan / Reservasi Meja</h3>
+      <p class="muted">Isi data, pilih menu favoritmu. Pesanan masuk ke kasir untuk dikonfirmasi.</p>
+      <label>Nama Pemesan<input type="text" id="custName" required placeholder="Nama kamu" /></label>
+      <label>Nomor Meja (opsional)<input type="text" id="custTable" placeholder="mis. A3" /></label>
+      <label>Catatan (opsional)<input type="text" id="custNote" placeholder="mis. less sugar, tanpa es" /></label>
+
+      <div class="picker" id="orderPicker"></div>
+      <div class="order-summary">
+        <span>Total</span><strong id="orderTotal">Rp0</strong>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Kirim Pesanan</button>
+      <p class="order-msg" id="orderMsg"></p>
+    </form>
+  </div>
+</section>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer" id="kontak">
+  <div class="container footer-grid">
+    <div>
+      <div class="brand">
+        <img src="/assets/logo.png" alt="Logo" class="brand-logo" onerror="this.style.display='none'" />
+        <span class="brand-text"><strong>TITIK JENUH</strong><small>COFFEE SHOP</small></span>
+      </div>
+      <p class="muted">Tempat singgah pas buat kamu yang lagi lelah sama rutinitas.</p>
+    </div>
+    <div>
+      <h4>Jelajahi</h4>
+      <a href="#beranda">Beranda</a><a href="#menu">Menu</a><a href="#vibe">Vibe</a><a href="#lokasi">Lokasi</a>
+    </div>
+    <div>
+      <h4>Ikuti Kami</h4>
+      <a href="https://instagram.com/titikjenuh.coffee" target="_blank" rel="noopener">📷 Instagram</a>
+      <a href="https://wa.me/6281200004400" target="_blank" rel="noopener">💬 WhatsApp</a>
+    </div>
+  </div>
+  <div class="container footer-bottom">
+    <span>© <span id="year"></span> TITIK JENUH COFFEE SHOP. Hak cipta dilindungi.</span>
+    <span class="powered">Powered by <strong>X-VIBE Cyber Development</strong></span>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

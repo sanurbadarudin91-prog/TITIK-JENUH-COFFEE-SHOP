@@ -1,0 +1,20 @@
+{
+  "name": "titik-jenuh-coffee-shop",
+  "version": "1.0.0",
+  "description": "Website coffee shop TITIK JENUH - halaman pengunjung + panel admin tersembunyi.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["coffee-shop", "express", "sqlite"],
+  "author": "X-VIBE Cyber Development",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.3.0"
+  }
+}
