@@ -11,7 +11,7 @@ window.TJ_CONFIG = {
   // Ini hanya menyembunyikan pintu, bukan pengaman data — pengaman
   // sebenarnya adalah Supabase Auth + Row Level Security.
   gateToken: 'ADM-2026TITKJENUH-TOKEN',
-  adminPath: '/admin.html',
+  adminPath: '/admin/',
 
   cafe: {
     name: 'TITIK JENUH COFFEE SHOP',

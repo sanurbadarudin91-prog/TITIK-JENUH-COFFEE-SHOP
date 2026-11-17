@@ -1,13 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "outputDirectory": "public",
-  "trailingSlash": false,
-  "rewrites": [
-    { "source": "/admin", "destination": "/admin.html" }
-  ],
+  "cleanUrls": true,
   "headers": [
     {
-      "source": "/(admin|admin.html)",
+      "source": "/admin/(.*)",
       "headers": [
         { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
         { "key": "Cache-Control", "value": "no-store" }

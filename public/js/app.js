@@ -87,13 +87,29 @@ function loadConfig() {
 }
 
 /* ---------------- Menu ---------------- */
-async function loadMenu() {
-  const { data, error } = await sb
+// Kolom foto (image_url) ada setelah migrasi-v2.sql dijalankan. Kalau belum,
+// otomatis mundur ke daftar kolom tanpa foto supaya website tetap tampil.
+async function ambilMenu() {
+  const dasar = 'id, name, category, description, price';
+  const denganFoto = await sb
     .from('menu_items')
-    .select('id, name, category, description, price')
+    .select(`${dasar}, image_url`)
     .eq('available', true)
     .order('category')
     .order('sort_order');
+
+  if (!denganFoto.error) return denganFoto;
+
+  return sb
+    .from('menu_items')
+    .select(dasar)
+    .eq('available', true)
+    .order('category')
+    .order('sort_order');
+}
+
+async function loadMenu() {
+  const { data, error } = await ambilMenu();
 
   if (error) {
     $('#menuGrid').innerHTML = '<p class="muted">Gagal memuat menu. Coba muat ulang halaman.</p>';
@@ -127,7 +143,11 @@ function renderMenu() {
   $('#menuGrid').innerHTML = list
     .map(
       (m) => `<article class="menu-card">
-        <div class="mc-img">${EMOJI[m.category] || '🍽️'}</div>
+        <div class="mc-img">${
+          m.image_url
+            ? `<img src="${esc(m.image_url)}" alt="${esc(m.name)}" loading="lazy" />`
+            : EMOJI[m.category] || '🍽️'
+        }</div>
         <div class="mc-body">
           <span class="mc-cat">${esc(m.category)}</span>
           <h3>${esc(m.name)}</h3>

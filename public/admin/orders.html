@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Pesanan · Panel Admin Titik Jenuh</title>
+<link rel="icon" href="../assets/logo.png" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body class="bg-stone-100 text-stone-900">
+
+  <div id="tj-app" class="hidden">
+    <div id="tj-overlay" class="hidden fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
+    <aside id="tj-sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 bg-stone-800 flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200"></aside>
+
+    <div class="lg:pl-64">
+      <header id="tj-topbar"
+        class="bg-white border-b border-stone-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-20"></header>
+
+      <main class="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
+
+        <div class="bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 text-sm">
+          <strong>Alur kerja:</strong> daftar ini hanya menampilkan pesanan yang <em>belum</em> diproses.
+          Setelah kamu klik <strong>ACC Pesanan</strong>, pesanan otomatis pindah ke
+          <a href="activity" class="underline font-semibold">Log Aktivitas</a> dan hilang dari sini.
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <button data-filter="pending" class="tj-chip px-4 py-2 rounded-full text-sm font-medium bg-amber-500 text-stone-900">Menunggu ACC</button>
+          <button data-filter="rejected" class="tj-chip px-4 py-2 rounded-full text-sm font-medium bg-white border border-stone-200 text-stone-600 hover:bg-stone-50">Ditolak</button>
+          <button data-filter="" class="tj-chip px-4 py-2 rounded-full text-sm font-medium bg-white border border-stone-200 text-stone-600 hover:bg-stone-50">Semua</button>
+          <button id="btnRefresh" class="ml-auto text-sm text-stone-500 hover:text-stone-900">⟳ Refresh</button>
+        </div>
+
+        <section id="ordersList" class="grid md:grid-cols-2 gap-4">
+          <p class="text-stone-400">Memuat pesanan...</p>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <div id="tj-toast" class="fixed bottom-5 right-5 z-50 opacity-0 pointer-events-none transition-opacity"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/orders.js"></script>
+</body>
+</html>

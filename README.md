@@ -38,12 +38,25 @@ Buka **Supabase → SQL Editor → New query**, tempel seluruh isi
 File itu membuat tabel, kebijakan RLS, fungsi RPC, data menu awal,
 akun admin, dan data contoh.
 
-### 2. Konfigurasi frontend
+### 2. Jalankan migrasi panel admin baru
+
+Masih di **SQL Editor**, jalankan [`supabase/migration-v2.sql`](supabase/migration-v2.sql).
+
+File itu menambahkan:
+
+- kolom foto menu (`image_url`)
+- bucket penyimpanan **`menu-photos`** + aturan unggah untuk admin
+- fungsi laporan keuangan `finance_report()`
+
+> Tanpa langkah ini, halaman **Kelola Menu** menampilkan peringatan dan
+> foto menu tidak bisa disimpan. Halaman lain tetap berjalan normal.
+
+### 3. Konfigurasi frontend
 
 Semua pengaturan publik ada di [`public/js/config.js`](public/js/config.js):
 URL Supabase, publishable key, token gerbang admin, dan info kafe.
 
-### 3. Deploy
+### 4. Deploy
 
 ```bash
 vercel deploy --prod
@@ -91,11 +104,22 @@ Publishable key boleh terlihat publik — keamanan tidak bergantung padanya.
 - Pencarian menu (sekaligus gerbang admin)
 - Form pesan/reservasi meja
 
-**Panel admin**
-- Dashboard: pemasukan kotor, pemasukan bersih, saldo masuk, pesanan menunggu
-- Pesanan: ACC / tolak / tandai dibayar
-- Keuangan: rincian modal, pengeluaran, grafik 7 hari, menu terlaris
-- Log aktivitas
+**Panel admin** (halaman terpisah, tidak saling tumpang tindih)
+
+| Halaman | Isi |
+|---|---|
+| **Login** | Form masuk. Setelah berhasil **langsung pindah** ke Dashboard |
+| **Dashboard** | Ringkasan statistik + grafik pemasukan 7 hari, menu terlaris, pesanan terbaru |
+| **Pesanan** | Daftar pesanan masuk + tombol **ACC Pesanan** / Tolak |
+| **Log Aktivitas** | Pelanggan yang sudah di-ACC + toggle **Sudah Bayar / Belum Bayar** + riwayat admin |
+| **Keuangan** | Laba kotor & bersih otomatis (harga jual − harga modal), grafik 14 hari, catat pengeluaran |
+| **Kelola Menu** | Tambah menu (foto, harga modal, harga jual, nama, deskripsi) + hapus/nonaktifkan |
+
+**Alur ACC:** pesanan yang di-ACC **hilang dari halaman Pesanan** dan
+**pindah ke halaman Log Aktivitas**.
+
+Navigasi memakai sidebar (desktop) / menu geser (HP) dengan Tailwind CSS.
+Setiap halaman berdiri sendiri — tidak ada konten yang menyatu dalam satu layar.
 
 ---
 
@@ -117,18 +141,31 @@ npx serve public -l 12000
 
 ```
 public/
-├── index.html          # halaman pengunjung
-├── admin.html          # panel admin (dijaga gerbang token)
+├── index.html              # halaman pengunjung
 ├── 404.html
-├── css/style.css       # tema pengunjung
-├── css/admin.css       # tema admin
-├── js/config.js        # konfigurasi publik
-├── js/app.js           # logika pengunjung
-├── js/admin.js         # logika admin
-└── assets/             # logo, foto vibe, video hero
+├── admin/                  # panel admin — 6 halaman terpisah
+│   ├── index.html          #   1. Login / Auth
+│   ├── dashboard.html      #   2. Statistik & grafik
+│   ├── orders.html         #   3. Pesanan (ACC / tolak)
+│   ├── activity.html       #   4. Log aktivitas & status bayar
+│   ├── finance.html        #   5. Keuangan (laba/rugi)
+│   ├── menu.html           #   6. Kelola menu (foto, hapus)
+│   └── js/
+│       ├── common.js       #   kerangka bersama (sidebar, sesi, util)
+│       ├── login.js
+│       ├── dashboard.js
+│       ├── orders.js
+│       ├── activity.js
+│       ├── finance.js
+│       └── menu.js
+├── css/style.css           # tema pengunjung
+├── js/config.js            # konfigurasi publik
+├── js/app.js               # logika pengunjung
+└── assets/                 # logo, foto vibe, video hero
 supabase/
-└── schema.sql          # skema database + RLS + RPC
-vercel.json             # konfigurasi deploy statis
+├── schema.sql              # skema database + RLS + RPC
+└── migration-v2.sql        # foto menu, storage, laporan keuangan
+vercel.json                 # konfigurasi deploy statis
 ```
 
 ---
@@ -147,8 +184,10 @@ Panduan lengkap ada di `public/assets/README.md`.
 
 ## 📝 Mengubah Menu & Harga
 
-Menu disimpan di tabel `menu_items` pada Supabase. Ubah lewat
-**Table Editor** di dashboard Supabase, atau lewat SQL Editor:
+Cara termudah: **Panel Admin → Kelola Menu** (tambah menu beserta foto,
+atau hapus menu yang sudah tidak dijual).
+
+Menu juga bisa diubah langsung di tabel `menu_items` pada Supabase:
 
 ```sql
 update public.menu_items set price = 23000 where name = 'Kopi Susu Titik Jenuh';
@@ -156,6 +195,8 @@ update public.menu_items set price = 23000 where name = 'Kopi Susu Titik Jenuh';
 insert into public.menu_items (name, category, description, price, cost, sort_order)
 values ('Es Teh Manis', 'Non-Coffee', 'Teh manis dingin, segar.', 12000, 3000, 11);
 ```
+
+> Kolom `cost` (harga modal) dipakai untuk menghitung laba di halaman Keuangan.
 
 ---
 

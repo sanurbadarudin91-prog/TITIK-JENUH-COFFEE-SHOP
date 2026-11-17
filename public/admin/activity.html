@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Log Aktivitas · Panel Admin Titik Jenuh</title>
+<link rel="icon" href="../assets/logo.png" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body class="bg-stone-100 text-stone-900">
+
+  <div id="tj-app" class="hidden">
+    <div id="tj-overlay" class="hidden fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
+    <aside id="tj-sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 bg-stone-800 flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200"></aside>
+
+    <div class="lg:pl-64">
+      <header id="tj-topbar"
+        class="bg-white border-b border-stone-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-20"></header>
+
+      <main class="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
+
+        <!-- Ringkasan pembayaran -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Pelanggan Di-ACC</span>
+            <strong id="pAcc" class="block text-xl md:text-2xl font-bold mt-1">0</strong>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Sudah Bayar</span>
+            <strong id="pPaid" class="block text-xl md:text-2xl font-bold mt-1 text-emerald-700">Rp0</strong>
+            <span id="pPaidCount" class="text-xs text-stone-400">0 pesanan</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Belum Bayar</span>
+            <strong id="pUnpaid" class="block text-xl md:text-2xl font-bold mt-1 text-red-600">Rp0</strong>
+            <span id="pUnpaidCount" class="text-xs text-stone-400">0 pesanan</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Entri Log</span>
+            <strong id="pLog" class="block text-xl md:text-2xl font-bold mt-1">0</strong>
+          </div>
+        </section>
+
+        <!-- Daftar pelanggan di-ACC -->
+        <section class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+          <div class="px-5 md:px-6 py-4 border-b border-stone-200 flex items-center justify-between gap-3">
+            <div>
+              <h2 class="font-bold">Pelanggan Di-ACC</h2>
+              <p class="text-xs text-stone-500">Ubah status pembayaran dengan satu klik.</p>
+            </div>
+            <button id="btnRefresh" class="text-sm text-stone-500 hover:text-stone-900 shrink-0">⟳ Refresh</button>
+          </div>
+
+          <!-- Tabel (desktop) -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-stone-50 text-stone-500 text-xs uppercase">
+                <tr>
+                  <th class="text-left px-5 py-3 font-medium">Pelanggan</th>
+                  <th class="text-left px-5 py-3 font-medium">Kode</th>
+                  <th class="text-left px-5 py-3 font-medium">Waktu</th>
+                  <th class="text-right px-5 py-3 font-medium">Total</th>
+                  <th class="text-center px-5 py-3 font-medium">Status Bayar</th>
+                </tr>
+              </thead>
+              <tbody id="accTable" class="divide-y divide-stone-100"></tbody>
+            </table>
+          </div>
+
+          <!-- Kartu (mobile) -->
+          <div id="accCards" class="md:hidden divide-y divide-stone-100"></div>
+        </section>
+
+        <!-- Log aktivitas -->
+        <section class="bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+          <div class="px-5 md:px-6 py-4 border-b border-stone-200">
+            <h2 class="font-bold">Riwayat Aktivitas Admin</h2>
+            <p class="text-xs text-stone-500">Jejak ACC, penolakan, pembayaran, dan perubahan menu.</p>
+          </div>
+          <ul id="logList" class="divide-y divide-stone-100 max-h-[28rem] overflow-y-auto"></ul>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <div id="tj-toast" class="fixed bottom-5 right-5 z-50 opacity-0 pointer-events-none transition-opacity"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/activity.js"></script>
+</body>
+</html>

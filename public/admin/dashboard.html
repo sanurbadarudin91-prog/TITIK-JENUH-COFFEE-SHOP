@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Dashboard · Panel Admin Titik Jenuh</title>
+<link rel="icon" href="../assets/logo.png" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body class="bg-stone-100 text-stone-900">
+
+  <div id="tj-app" class="hidden">
+    <!-- Overlay sidebar (mobile) -->
+    <div id="tj-overlay" class="hidden fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
+
+    <!-- Sidebar -->
+    <aside id="tj-sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 bg-stone-800 flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200"></aside>
+
+    <!-- Konten -->
+    <div class="lg:pl-64">
+      <header id="tj-topbar"
+        class="bg-white border-b border-stone-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-20"></header>
+
+      <main class="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
+
+        <!-- Kartu ringkasan -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Total Pesanan</span>
+            <strong id="kTotal" class="block text-xl md:text-2xl font-bold mt-1">0</strong>
+            <span class="text-xs text-stone-400">semua status</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Pendapatan Kotor</span>
+            <strong id="kGross" class="block text-xl md:text-2xl font-bold mt-1 text-emerald-700">Rp0</strong>
+            <span class="text-xs text-stone-400">pesanan disetujui</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Laba Bersih</span>
+            <strong id="kNet" class="block text-xl md:text-2xl font-bold mt-1 text-amber-600">Rp0</strong>
+            <span class="text-xs text-stone-400">jual − modal − operasional</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Menunggu ACC</span>
+            <strong id="kPending" class="block text-xl md:text-2xl font-bold mt-1 text-red-600">0</strong>
+            <span id="kPendingSub" class="text-xs text-stone-400">perlu ditinjau</span>
+          </div>
+        </section>
+
+        <!-- Grafik -->
+        <section class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-stone-200">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold">Pemasukan 7 Hari Terakhir</h2>
+            <button id="btnRefresh" class="text-sm text-stone-500 hover:text-stone-900">⟳ Refresh</button>
+          </div>
+          <div id="chart" class="h-56"></div>
+        </section>
+
+        <!-- Panel bawah -->
+        <section class="grid lg:grid-cols-2 gap-6">
+          <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-stone-200">
+            <h2 class="font-bold mb-4">Menu Terlaris</h2>
+            <ul id="bestSeller" class="space-y-2 text-sm">
+              <li class="text-stone-400">Memuat...</li>
+            </ul>
+          </div>
+
+          <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-stone-200">
+            <h2 class="font-bold mb-4">Pesanan Terbaru</h2>
+            <div id="recentOrders" class="space-y-2 text-sm">
+              <p class="text-stone-400">Memuat...</p>
+            </div>
+            <a href="orders" class="inline-block mt-4 text-sm font-medium text-amber-600 hover:text-amber-700">
+              Kelola semua pesanan →
+            </a>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <div id="tj-toast" class="fixed bottom-5 right-5 z-50 opacity-0 pointer-events-none transition-opacity"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="../js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Keuangan · Panel Admin Titik Jenuh</title>
+<link rel="icon" href="../assets/logo.png" />
+<script src="https://cdn.tailwindcss.com"></script>
+<style>body{font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}</style>
+</head>
+<body class="bg-stone-100 text-stone-900">
+
+  <div id="tj-app" class="hidden">
+    <div id="tj-overlay" class="hidden fixed inset-0 bg-black/50 z-30 lg:hidden"></div>
+    <aside id="tj-sidebar"
+      class="fixed inset-y-0 left-0 z-40 w-64 bg-stone-800 flex flex-col -translate-x-full lg:translate-x-0 transition-transform duration-200"></aside>
+
+    <div class="lg:pl-64">
+      <header id="tj-topbar"
+        class="bg-white border-b border-stone-200 px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-20"></header>
+
+      <main class="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
+
+        <!-- Kartu utama -->
+        <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Pendapatan Kotor</span>
+            <strong id="fGross" class="block text-xl md:text-2xl font-bold mt-1">Rp0</strong>
+            <span class="text-xs text-stone-400">total penjualan</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Harga Modal (HPP)</span>
+            <strong id="fCogs" class="block text-xl md:text-2xl font-bold mt-1 text-red-600">Rp0</strong>
+            <span class="text-xs text-stone-400">biaya bahan</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Laba Kotor</span>
+            <strong id="fProfit" class="block text-xl md:text-2xl font-bold mt-1 text-emerald-700">Rp0</strong>
+            <span class="text-xs text-stone-400">jual − modal</span>
+          </div>
+          <div class="bg-white rounded-2xl p-4 md:p-5 shadow-sm border border-stone-200">
+            <span class="text-xs font-medium text-stone-500">Laba Bersih</span>
+            <strong id="fNet" class="block text-xl md:text-2xl font-bold mt-1 text-amber-600">Rp0</strong>
+            <span class="text-xs text-stone-400">laba kotor − operasional</span>
+          </div>
+        </section>
+
+        <section class="grid lg:grid-cols-3 gap-6">
+          <!-- Rincian laba/rugi -->
+          <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-stone-200 lg:col-span-1">
+            <h2 class="font-bold mb-4">Rincian Laba / Rugi</h2>
+            <table class="w-full text-sm">
+              <tbody class="divide-y divide-stone-100">
+                <tr><td class="py-2.5 text-stone-600">Pendapatan Kotor</td><td id="rGross" class="py-2.5 text-right font-semibold">Rp0</td></tr>
+                <tr><td class="py-2.5 text-stone-600">− Harga Modal</td><td id="rCogs" class="py-2.5 text-right font-semibold text-red-600">Rp0</td></tr>
+                <tr class="bg-stone-50"><td class="py-2.5 px-1 font-medium">Laba Kotor</td><td id="rProfit" class="py-2.5 px-1 text-right font-bold text-emerald-700">Rp0</td></tr>
+                <tr><td class="py-2.5 text-stone-600">− Pengeluaran Operasional</td><td id="rExp" class="py-2.5 text-right font-semibold text-red-600">Rp0</td></tr>
+                <tr class="bg-amber-50"><td class="py-2.5 px-1 font-bold">Laba Bersih</td><td id="rNet" class="py-2.5 px-1 text-right font-bold text-amber-600">Rp0</td></tr>
+              </tbody>
+            </table>
+
+            <div class="mt-5 pt-4 border-t border-stone-100 grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <span class="text-xs text-stone-500">Sudah Bayar</span>
+                <strong id="rPaid" class="block text-emerald-700">Rp0</strong>
+              </div>
+              <div>
+                <span class="text-xs text-stone-500">Belum Bayar</span>
+                <strong id="rUnpaid" class="block text-red-600">Rp0</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grafik -->
+          <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-stone-200 lg:col-span-2">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="font-bold">Tren 14 Hari Terakhir</h2>
+              <span class="text-xs text-stone-400">kotor vs laba</span>
+            </div>
+            <div id="chart" class="h-64"></div>
+          </div>
+        </section>
+
+        <!-- Pengeluaran operasional -->
+        <section class="grid lg:grid-cols-3 gap-6">
+          <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-stone-200">
+            <h2 class="font-bold mb-4">Catat Pengeluaran</h2>
+            <form id="expForm" class="space-y-3">
+              <input id="expLabel" type="text" required placeholder="mis. beli susu 10 liter"
+                     class="w-full rounded-xl border border-stone-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
+              <input id="expAmount" type="number" min="1" required placeholder="Nominal (Rp)"
+                     class="w-full rounded-xl border border-stone-300 px-4 py-2.5 text-sm focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none" />
+              <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-stone-900 font-semibold py-2.5 rounded-xl transition">
+                + Catat Pengeluaran
+              </button>
+            </form>
+            <ul id="expList" class="mt-4 space-y-2 text-sm max-h-52 overflow-y-auto"></ul>
+          </div>
+
+          <!-- Produk paling menguntungkan -->
+          <div class="bg-white rounded-2xl p-5 md:p-6 shadow-sm border border-stone-200 lg:col-span-2">
+            <h2 class="font-bold mb-4">Menu Paling Menguntungkan</h2>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead class="text-stone-500 text-xs uppercase border-b border-stone-200">
+                  <tr>
+                    <th class="text-left py-2 font-medium">Menu</th>
+                    <th class="text-right py-2 font-medium">Terjual</th>
+                    <th class="text-right py-2 font-medium">Pendapatan</th>
+                    <th class="text-right py-2 font-medium">Laba</th>
+                  </tr>
+                </thead>
+                <tbody id="topItems" class="divide-y divide-stone-100"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <div id="tj-toast" class="fixed bottom-5 right-5 z-50 opacity-0 pointer-events-none transition-opacity"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+  <script src="../js/config.js"></script>
+  <script src="js/common.js"></script>
+  <script src="js/finance.js"></script>
+</body>
+</html>
