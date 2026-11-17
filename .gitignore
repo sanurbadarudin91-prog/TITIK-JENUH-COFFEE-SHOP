@@ -1,13 +1,10 @@
-# dependencies
+# dependencies (kalau memakai serve lokal)
 node_modules/
 
-# runtime data (database lokal)
-data/
+# Vercel
+.vercel
 
-# environment
+# environment & log
 .env
-
-# logs & OS junk
 *.log
 .DS_Store
-.vercel

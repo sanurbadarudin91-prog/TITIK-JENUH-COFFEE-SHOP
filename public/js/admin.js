@@ -1,24 +1,18 @@
+/* ==================================================================
+   TITIK JENUH — panel admin (tanpa backend sendiri)
+   Login lewat Supabase Auth; seluruh data dijaga Row Level Security.
+   ================================================================== */
+const CFG = window.TJ_CONFIG;
+const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
+
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const rupiah = (n) => 'Rp' + Number(n || 0).toLocaleString('id-ID');
 
 let currentStatus = 'pending';
+let adminUsername = '';
 
 /* ---------------- helpers ---------------- */
-async function api(url, options = {}) {
-  const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json' },
-    ...options,
-  });
-  if (res.status === 401) {
-    showLogin();
-    throw new Error('Sesi berakhir, silakan masuk ulang.');
-  }
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan.');
-  return data;
-}
-
 let toastTimer;
 function toast(msg) {
   const el = $('#toast');
@@ -32,12 +26,18 @@ function esc(s) {
   return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+function logActivity(action, detail = '') {
+  sb.rpc('log_activity', { p_action: action, p_detail: detail }).then(() => {}, () => {});
+}
+
 /* ---------------- auth ---------------- */
 function showLogin() {
   $('#loginView').hidden = false;
   $('#adminView').hidden = true;
 }
+
 function showAdmin(username) {
+  adminUsername = username;
   $('#loginView').hidden = true;
   $('#adminView').hidden = false;
   $('#welcomeText').textContent = `Masuk sebagai ${username}. Kelola pesanan & keuangan di sini.`;
@@ -48,35 +48,60 @@ $('#loginForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const msg = $('#loginMsg');
   msg.textContent = 'Memeriksa...';
-  try {
-    const data = await api('/api/admin/login', {
-      method: 'POST',
-      body: JSON.stringify({
-        username: $('#lUsername').value.trim(),
-        email: $('#lEmail').value.trim(),
-        password: $('#lPassword').value,
-      }),
-    });
-    msg.textContent = '';
-    showAdmin(data.username);
-  } catch (err) {
-    msg.textContent = err.message;
+
+  const username = $('#lUsername').value.trim();
+  const email = $('#lEmail').value.trim();
+  const password = $('#lPassword').value;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) {
+    msg.textContent = 'Email atau password salah.';
+    return;
   }
+
+  // Pastikan akun ini terdaftar sebagai admin.
+  const { data: row } = await sb
+    .from('admins')
+    .select('username')
+    .eq('user_id', data.user.id)
+    .maybeSingle();
+
+  if (!row) {
+    await sb.auth.signOut();
+    msg.textContent = 'Akun ini tidak punya akses admin.';
+    return;
+  }
+
+  if (username && row.username !== username) {
+    await sb.auth.signOut();
+    msg.textContent = 'Username tidak cocok dengan akun ini.';
+    return;
+  }
+
+  msg.textContent = '';
+  $('#lPassword').value = '';
+  showAdmin(row.username);
+  logActivity('login-berhasil', '');
 });
 
 $('#logoutBtn').addEventListener('click', async () => {
-  await fetch('/api/admin/logout', { method: 'POST' });
+  logActivity('logout', '');
+  await sb.auth.signOut();
   showLogin();
 });
 
 (async function boot() {
-  try {
-    const data = await api('/api/admin/session');
-    if (data.authenticated) showAdmin(data.username);
-    else showLogin();
-  } catch {
-    showLogin();
-  }
+  const { data } = await sb.auth.getSession();
+  if (!data.session) return showLogin();
+
+  const { data: row } = await sb
+    .from('admins')
+    .select('username')
+    .eq('user_id', data.session.user.id)
+    .maybeSingle();
+
+  if (!row) return showLogin();
+  showAdmin(row.username);
 })();
 
 /* ---------------- navigation ---------------- */
@@ -99,7 +124,11 @@ async function refreshAll() {
 }
 
 async function loadStats() {
-  const s = await api('/api/admin/stats');
+  const { data: s, error } = await sb.rpc('admin_stats');
+  if (error || !s) {
+    toast('Gagal memuat statistik.');
+    return;
+  }
 
   $('#statGross').textContent = rupiah(s.revenue.gross);
   $('#statGrossSub').textContent = `dari ${s.orders.approved} pesanan disetujui`;
@@ -146,18 +175,17 @@ function renderBars(rows) {
 
 $('#expenseForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  try {
-    await api('/api/admin/expenses', {
-      method: 'POST',
-      body: JSON.stringify({ label: $('#expLabel').value.trim(), amount: Number($('#expAmount').value) }),
-    });
-    $('#expLabel').value = '';
-    $('#expAmount').value = '';
-    toast('Pengeluaran dicatat');
-    loadStats();
-  } catch (err) {
-    toast(err.message);
-  }
+  const label = $('#expLabel').value.trim();
+  const amount = Math.round(Number($('#expAmount').value));
+
+  const { error } = await sb.from('expenses').insert({ label, amount });
+  if (error) return toast('Gagal mencatat pengeluaran.');
+
+  $('#expLabel').value = '';
+  $('#expAmount').value = '';
+  toast('Pengeluaran dicatat');
+  logActivity('catat-pengeluaran', `${label} Rp${amount}`);
+  loadStats();
 });
 
 /* ---------------- orders ---------------- */
@@ -171,32 +199,46 @@ $$('.chip').forEach((chip) =>
 );
 
 async function loadOrders() {
-  const url = currentStatus ? `/api/admin/orders?status=${currentStatus}` : '/api/admin/orders';
-  const data = await api(url);
+  let query = sb
+    .from('orders')
+    .select('*, items:order_items(name, price, qty, subtotal)')
+    .order('id', { ascending: false })
+    .limit(200);
+
+  if (currentStatus) query = query.eq('status', currentStatus);
+
+  const { data, error } = await query;
   const box = $('#ordersList');
-  if (!data.orders.length) {
+
+  if (error) {
+    box.innerHTML = '<p class="muted">Gagal memuat pesanan.</p>';
+    return;
+  }
+  if (!data.length) {
     box.innerHTML = '<p class="muted">Tidak ada pesanan pada kategori ini.</p>';
     return;
   }
-  box.innerHTML = data.orders.map(orderCard).join('');
+
+  box.innerHTML = data.map(orderCard).join('');
   $$('[data-act]').forEach((b) =>
-    b.addEventListener('click', () => orderAction(b.dataset.act, Number(b.dataset.id)))
+    b.addEventListener('click', () => orderAction(b.dataset.act, Number(b.dataset.id), b.dataset.code))
   );
 }
 
 function orderCard(o) {
-  const items = o.items
+  const items = (o.items || [])
     .map(
       (it) => `<li><span class="oi-name">${esc(it.name)} <small>×${it.qty}</small></span><span>${rupiah(it.subtotal)}</span></li>`
     )
     .join('');
+
   const actions = [];
   if (o.status === 'pending') {
-    actions.push(`<button class="btn btn-primary btn-sm" data-act="approve" data-id="${o.id}">✓ ACC</button>`);
-    actions.push(`<button class="btn btn-ghost btn-sm" data-act="reject" data-id="${o.id}">✕ Tolak</button>`);
+    actions.push(`<button class="btn btn-primary btn-sm" data-act="approve" data-id="${o.id}" data-code="${esc(o.code)}">✓ ACC</button>`);
+    actions.push(`<button class="btn btn-ghost btn-sm" data-act="reject" data-id="${o.id}" data-code="${esc(o.code)}">✕ Tolak</button>`);
   }
   if (o.status === 'approved' && o.payment_status !== 'paid') {
-    actions.push(`<button class="btn btn-primary btn-sm" data-act="pay" data-id="${o.id}">💵 Tandai Dibayar</button>`);
+    actions.push(`<button class="btn btn-primary btn-sm" data-act="pay" data-id="${o.id}" data-code="${esc(o.code)}">💵 Tandai Dibayar</button>`);
   }
 
   return `<article class="order">
@@ -217,23 +259,37 @@ function orderCard(o) {
   </article>`;
 }
 
-async function orderAction(act, id) {
-  const map = { approve: 'approve', reject: 'reject', pay: 'pay' };
-  try {
-    await api(`/api/admin/orders/${id}/${map[act]}`, { method: 'POST' });
-    toast(act === 'pay' ? 'Pembayaran dicatat' : act === 'approve' ? 'Pesanan di-ACC' : 'Pesanan ditolak');
-    await refreshAll();
-  } catch (err) {
-    toast(err.message);
-  }
+async function orderAction(act, id, code) {
+  const patch =
+    act === 'pay'
+      ? { payment_status: 'paid', updated_at: new Date().toISOString() }
+      : { status: act === 'approve' ? 'approved' : 'rejected', updated_at: new Date().toISOString() };
+
+  const { error } = await sb.from('orders').update(patch).eq('id', id);
+  if (error) return toast('Gagal memperbarui pesanan.');
+
+  toast(act === 'pay' ? 'Pembayaran dicatat' : act === 'approve' ? 'Pesanan di-ACC' : 'Pesanan ditolak');
+  logActivity(
+    act === 'pay' ? 'pembayaran-diterima' : `pesanan-${act === 'approve' ? 'approved' : 'rejected'}`,
+    code || ''
+  );
+  await refreshAll();
 }
 
 /* ---------------- audit ---------------- */
 async function loadAudit() {
-  const data = await api('/api/admin/audit');
-  $('#auditTable tbody').innerHTML = data.log
-    .map(
-      (l) => `<tr><td>${esc(l.created_at)}</td><td>${esc(l.actor)}</td><td>${esc(l.action)}</td><td>${esc(l.detail)}</td></tr>`
-    )
-    .join('');
+  const { data, error } = await sb
+    .from('activity_log')
+    .select('created_at, actor, action, detail')
+    .order('id', { ascending: false })
+    .limit(50);
+
+  $('#auditTable tbody').innerHTML = error
+    ? '<tr><td colspan="4" class="muted">Gagal memuat log.</td></tr>'
+    : (data || [])
+        .map((l) => {
+          const t = new Date(l.created_at).toLocaleString('id-ID');
+          return `<tr><td>${esc(t)}</td><td>${esc(l.actor)}</td><td>${esc(l.action)}</td><td>${esc(l.detail)}</td></tr>`;
+        })
+        .join('');
 }

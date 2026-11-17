@@ -1,6 +1,12 @@
+/* ==================================================================
+   TITIK JENUH — halaman pengunjung (tanpa backend sendiri)
+   Data menu & pesanan langsung ke Supabase.
+   ================================================================== */
+const CFG = window.TJ_CONFIG;
+const sb = window.supabase.createClient(CFG.supabaseUrl, CFG.supabaseKey);
+
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
-
 const rupiah = (n) => 'Rp' + Number(n || 0).toLocaleString('id-ID');
 
 let MENU = [];
@@ -31,27 +37,26 @@ $('#searchClose').addEventListener('click', () => searchPanel.classList.remove('
 $('#searchInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(); });
 $('#searchGo').addEventListener('click', runSearch);
 
-async function runSearch() {
+function runSearch() {
   const q = $('#searchInput').value.trim();
   if (!q) return;
-  const box = $('#searchResults');
-  box.innerHTML = '<p class="muted">Mencari...</p>';
-  try {
-    const res = await fetch('/api/search', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ q }),
-    });
-    const data = await res.json();
-    if (data.gate) {
-      box.innerHTML = '<p class="muted">Membuka panel admin...</p>';
-      window.location.href = data.redirect;
-      return;
-    }
-    renderSearch(data.items || []);
-  } catch {
-    box.innerHTML = '<p class="muted">Gagal mencari. Coba lagi.</p>';
+
+  // Pintu tersembunyi panel admin.
+  if (q === CFG.gateToken) {
+    sessionStorage.setItem('tj_gate', '1');
+    $('#searchResults').innerHTML = '<p class="muted">Membuka panel admin...</p>';
+    window.location.href = CFG.adminPath;
+    return;
   }
+
+  const term = q.toLowerCase();
+  const items = MENU.filter(
+    (m) =>
+      m.name.toLowerCase().includes(term) ||
+      m.category.toLowerCase().includes(term) ||
+      (m.description || '').toLowerCase().includes(term)
+  );
+  renderSearch(items);
 }
 
 function renderSearch(items) {
@@ -71,22 +76,31 @@ function renderSearch(items) {
 }
 
 /* ---------------- Config ---------------- */
-async function loadConfig() {
-  try {
-    const c = await (await fetch('/api/config')).json();
-    $('#infoHours').textContent = c.hours;
-    $('#infoAddress').textContent = c.address;
-    $('#infoPhone').textContent = c.phone;
-    $('#infoIg').href = c.instagram;
-    $('#mapsBtn').href = c.maps;
-    $('#year').textContent = new Date().getFullYear();
-  } catch { /* ignore */ }
+function loadConfig() {
+  const c = CFG.cafe;
+  $('#infoHours').textContent = c.hours;
+  $('#infoAddress').textContent = c.address;
+  $('#infoPhone').textContent = c.phone;
+  $('#infoIg').href = c.instagram;
+  $('#mapsBtn').href = c.maps;
+  $('#year').textContent = new Date().getFullYear();
 }
 
 /* ---------------- Menu ---------------- */
 async function loadMenu() {
-  const data = await (await fetch('/api/menu')).json();
-  MENU = data.items || [];
+  const { data, error } = await sb
+    .from('menu_items')
+    .select('id, name, category, description, price')
+    .eq('available', true)
+    .order('category')
+    .order('sort_order');
+
+  if (error) {
+    $('#menuGrid').innerHTML = '<p class="muted">Gagal memuat menu. Coba muat ulang halaman.</p>';
+    return;
+  }
+
+  MENU = data || [];
   buildTabs();
   renderMenu();
   buildPicker();
@@ -183,30 +197,26 @@ $('#orderForm').addEventListener('submit', async (e) => {
   msg.className = 'order-msg';
   msg.textContent = 'Mengirim pesanan...';
 
-  try {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        customer_name: name,
-        table_no: $('#custTable').value.trim(),
-        note: $('#custNote').value.trim(),
-        items,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Gagal');
-    msg.className = 'order-msg ok';
-    msg.textContent = `Pesanan terkirim! Kode: ${data.code}. Total ${rupiah(data.total)}. Menunggu konfirmasi kasir.`;
-    cart.clear();
-    $$('[data-qty]').forEach((i) => (i.value = 0));
-    updateTotal();
-    $('#orderForm').reset();
-    toast('Pesanan berhasil dikirim ☕');
-  } catch (err) {
+  const { data, error } = await sb.rpc('create_order', {
+    p_name: name,
+    p_table: $('#custTable').value.trim(),
+    p_note: $('#custNote').value.trim(),
+    p_items: items,
+  });
+
+  if (error) {
     msg.className = 'order-msg err';
-    msg.textContent = err.message || 'Gagal mengirim pesanan.';
+    msg.textContent = error.message || 'Gagal mengirim pesanan.';
+    return;
   }
+
+  msg.className = 'order-msg ok';
+  msg.textContent = `Pesanan terkirim! Kode: ${data.code}. Total ${rupiah(data.total)}. Menunggu konfirmasi kasir.`;
+  cart.clear();
+  $$('[data-qty]').forEach((i) => (i.value = 0));
+  updateTotal();
+  $('#orderForm').reset();
+  toast('Pesanan berhasil dikirim ☕');
 });
 
 /* ---------------- utils ---------------- */

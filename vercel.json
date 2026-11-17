@@ -1,14 +1,17 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "version": 2,
-  "builds": [
-    {
-      "src": "api/index.js",
-      "use": "@vercel/node",
-      "config": { "includeFiles": ["public/**", "views/**"] }
-    }
+  "outputDirectory": "public",
+  "trailingSlash": false,
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" }
   ],
-  "routes": [
-    { "src": "/(.*)", "dest": "/api/index.js" }
+  "headers": [
+    {
+      "source": "/(admin|admin.html)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "noindex, nofollow" },
+        { "key": "Cache-Control", "value": "no-store" }
+      ]
+    }
   ]
 }

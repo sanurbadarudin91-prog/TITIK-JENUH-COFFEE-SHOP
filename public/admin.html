@@ -142,6 +142,16 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/config.js"></script>
+<script>
+  // Gerbang tersembunyi: halaman ini hanya terbuka kalau token sudah diketik
+  // di kolom pencarian halaman utama. Ini hanya menyembunyikan pintu —
+  // pengaman data sebenarnya adalah Supabase Auth + Row Level Security.
+  if (sessionStorage.getItem('tj_gate') !== '1') {
+    window.location.replace('/404.html');
+  }
+</script>
 <script src="/js/admin.js"></script>
 </body>
 </html>
