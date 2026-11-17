@@ -10,3 +10,4 @@ data/
 # logs & OS junk
 *.log
 .DS_Store
+.vercel

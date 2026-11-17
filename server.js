@@ -285,6 +285,10 @@ app.use((req, res) => {
   res.status(404).sendFile(path.join(PUBLIC_DIR, '404.html'));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`TITIK JENUH COFFEE SHOP berjalan di http://localhost:${PORT}`);
-});
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`TITIK JENUH COFFEE SHOP berjalan di http://localhost:${PORT}`);
+  });
+}
