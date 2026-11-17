@@ -3,9 +3,13 @@
 Website coffee shop lengkap: **halaman pengunjung** + **panel admin tersembunyi**.
 Dibangun dengan Node.js (Express) + SQLite bawaan Node — tanpa database eksternal.
 
+## 🌐 Live
+
+**https://titik-jenuh.vercel.app**
+
 ---
 
-## 🚀 Menjalankan
+## 🚀 Menjalankan Lokal
 
 ```bash
 npm install
